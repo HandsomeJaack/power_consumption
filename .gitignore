@@ -1,0 +1,9 @@
+moc*
+*.user
+*.o
+*.in
+*.yaml
+RPMS
+Makefile
+*.list
+power_consumption
