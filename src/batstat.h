@@ -5,12 +5,12 @@
 #include <QString>
 #include <QList>
 
-class Chart : public QObject
+class BatteryStatistics : public QObject
 {
     Q_OBJECT
 public:
-    explicit Chart(QObject *parent = 0);
-    ~Chart();
+    explicit BatteryStatistics(QObject *parent = 0);
+    ~BatteryStatistics();
     Q_INVOKABLE QList<QString> getTime();
     Q_INVOKABLE QList<int> getPercentage();
 private:

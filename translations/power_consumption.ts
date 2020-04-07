@@ -2,16 +2,16 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
-    <name></name>
-    <message id="la_battery-stats">
-        <source>Battery stats</source>
+    <name>CoverPage</name>
+    <message>
+        <source>My Cover</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>CoverPage</name>
+    <name>FirstPage</name>
     <message>
-        <source>My Cover</source>
+        <source>Энергопотребление</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

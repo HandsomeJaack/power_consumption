@@ -12,9 +12,13 @@
 # The name of your application
 TARGET = power_consumption
 
+QT += core quick gui widgets
 CONFIG += sailfishapp
 
-SOURCES += src/power_consumption.cpp
+SOURCES += \
+    src/batstat.cpp \
+    src/main.cpp \
+    src/plotview.cpp
 
 DISTFILES += qml/power_consumption.qml \
     qml/cover/CoverPage.qml \
@@ -39,4 +43,5 @@ CONFIG += sailfishapp_i18n
 TRANSLATIONS += translations/power_consumption-de.ts
 
 HEADERS += \
-    src/power_consumption.h
+    src/batstat.h \
+    src/plotview.h

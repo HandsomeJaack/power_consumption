@@ -1,16 +1,10 @@
-#ifdef QT_QML_DEBUG
-#include <QtQuick>
-#endif
-
-#include <sailfishapp.h>
 #include <QDate>
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
 #include <QPair>
-#include <QtQml>
 
-#include "power_consumption.h"
+#include "batstat.h"
 #define BAT_STAT "/home/nemo/Downloads/total_stat"
 
 static QPair<QString, int> parseString(QString line)
@@ -19,7 +13,7 @@ static QPair<QString, int> parseString(QString line)
     return qMakePair(list[0], list[1].toInt());
 }
 
-Chart::Chart(QObject *parent): QObject(parent)
+BatteryStatistics::BatteryStatistics(QObject *parent): QObject(parent)
 {
    QFile bat_stat(BAT_STAT);
    if (!bat_stat.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -36,24 +30,16 @@ Chart::Chart(QObject *parent): QObject(parent)
    }
 }
 
-Chart::~Chart()
+BatteryStatistics::~BatteryStatistics()
 {
 }
 
-QList<QString> Chart::getTime()
+QList<QString> BatteryStatistics::getTime()
 {
     return time;
 }
 
-QList<int> Chart::getPercentage()
+QList<int> BatteryStatistics::getPercentage()
 {
     return percentage;
 }
-
-int main(int argc, char *argv[])
-{
-    qmlRegisterType<Chart>("battery.chart", 1, 0, "Chart");
-    return SailfishApp::main(argc, argv);
-}
-
-#include "moc_power_consumption.cpp"
