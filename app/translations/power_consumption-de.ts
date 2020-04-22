@@ -11,7 +11,7 @@
 <context>
     <name>FirstPage</name>
     <message>
-        <source>Энергопотребление</source>
+        <source>Потребление энергии</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

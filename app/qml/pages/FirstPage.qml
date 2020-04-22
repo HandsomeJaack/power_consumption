@@ -6,16 +6,18 @@ Page {
     id: page
 
     // The effective value will be restricted by ApplicationWindow.allowedOrientations
-    allowedOrientations: Orientation.All
+    allowedOrientations: Orientation.Portrait
 
     PageHeader {
         id: header
         //% "Battery stats"
-        title: qsTr("Энергопотребление")
+        title: qsTr("Потребление энергии")
     }
 
     PlotView {
         id: plot
+        color: Theme.highlightColor
+        lineCount: 5
         width: parent.width*0.75
         height: parent.width/2
         anchors.horizontalCenter: parent.horizontalCenter
@@ -23,44 +25,49 @@ Page {
         anchors.topMargin: parent.height*0.2
     }
 
-    Item {
-        onStateChanged: console.log(plot.lineCount)
-    }
-
-    property int lineCount: plot.lineCount
     readonly property var time: plot.diff
 
     Column {
         id: percantage
-        anchors.right: plot.left
-        anchors.top: plot.top
-        anchors.topMargin: -parent.height*0.02
+
+        anchors {
+            right: plot.left
+            rightMargin: parent.width/100
+            top: plot.top
+            topMargin: -Theme.fontSizeMedium/2
+        }
 
         Grid {
             columns: 1
-            rows: lineCount
-            rowSpacing: plot.height/10
+            rows: plot.lineCount
+            rowSpacing: plot.height/plot.lineCount - (Theme.fontSizeMedium + 2)
             Repeater {
-                model: lineCount
+                model: plot.lineCount
                 Text {
-                    color: "white"
-                    text: 100 - index*20
+                    id: rep
+                    color: Theme.highlightColor
+                    text: 100 - index*(100/(plot.lineCount - 1)) + "%"
                 }
             }
         }
     }
 
     Column {
-        anchors.top: percantage.bottom
-        anchors.left: percantage.right
+        id: timing
+
+        anchors {
+            top: plot.bottom
+            horizontalCenter: parent.horizontalCenter
+        }
+
         Grid {
             columns: 3
             rows: 1
-            columnSpacing: parent.width/5
+            columnSpacing: parent.width/4
             Repeater {
                 model: [time[0], time[1], time[2]]
                 delegate: Text {
-                    color: "white"
+                    color: Theme.highlightColor
                     text: modelData
                 }
             }

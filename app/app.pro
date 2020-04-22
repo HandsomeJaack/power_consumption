@@ -20,16 +20,6 @@ SOURCES += \
     src/main.cpp \
     src/plotview.cpp
 
-DISTFILES += qml/power_consumption.qml \
-    qml/cover/CoverPage.qml \
-    qml/pages/FirstPage.qml \
-    rpm/power_consumption.changes.in \
-    rpm/power_consumption.changes.run.in \
-    rpm/power_consumption.spec \
-    rpm/power_consumption.yaml \
-    translations/*.ts \
-    power_consumption.desktop
-
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 # to disable building translations every time, comment out the

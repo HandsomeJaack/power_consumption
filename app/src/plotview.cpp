@@ -1,6 +1,7 @@
 #include "batstat.h"
 #include "plotview.h"
 #include <QtMath>
+#include <QDate>
 #include <QSGSimpleRectNode>
 #include <QGraphicsItem>
 #include <QSGSimpleMaterial>
@@ -14,6 +15,7 @@ PlotView::PlotView(QQuickItem *parent): QQuickItem(parent)
     m_percantage = stats.getPercentage();
     m_background = nullptr;
     m_lineCount = 5;
+    m_color = Qt::white;
 }
 
 PlotView::~PlotView()
@@ -23,25 +25,26 @@ PlotView::~PlotView()
 QList<QString> PlotView::diff()
 {
     QList<QString> diff;
-    QString tmp = m_time[0].remove(16,7);
-    diff.append(tmp);
     int lastMeasurement = m_time.size()-1;
-    if(m_time[lastMeasurement][10] == m_time[0][10]) {
-        tmp = m_time[lastMeasurement/2].remove(16,7);
-        tmp = tmp.remove(0,11);
-        diff.append(tmp);
 
-        tmp = m_time[lastMeasurement].remove(16,7);
-        tmp = tmp.remove(0,11);
-        diff.append(tmp);
+    QString firstMeasurementDay = m_time[0];
+    QString midMeasurementDay = m_time[lastMeasurement/2];
+    QString lastMeasurementDay = m_time[lastMeasurement];
+
+    if(firstMeasurementDay.left(6) == lastMeasurementDay.left(6)) {
+        firstMeasurementDay = firstMeasurementDay.remove(0,6);
+        midMeasurementDay = midMeasurementDay.remove(0,6);
+        lastMeasurementDay = midMeasurementDay.remove(0,6);
     } else {
-        tmp = m_time[lastMeasurement].remove(16,7);
-        diff.append(tmp);
-
-        tmp = m_time[lastMeasurement].remove(16,7);
-        diff.append(tmp);
+        firstMeasurementDay =  firstMeasurementDay.insert(7, '\n');
+        midMeasurementDay = midMeasurementDay.insert(7, '\n');
+        lastMeasurementDay = lastMeasurementDay.insert(7, '\n');
     }
-    qDebug() << diff;
+
+    diff.append(firstMeasurementDay);
+    diff.append(midMeasurementDay);
+    diff.append(lastMeasurementDay);
+
     return diff;
 }
 
@@ -50,26 +53,41 @@ int PlotView::lineCount()
     return m_lineCount;
 }
 
+void PlotView::setLineCount(int lines)
+{
+    m_lineCount = lines;
+}
+
+QColor PlotView::color()
+{
+    return m_color;
+}
+
+void PlotView::setColor(QColor theme_color)
+{
+    m_color = theme_color;
+}
+
 void PlotView::setNodeParameters(QSGGeometryNode *node, int pointCount,
-                                 float lineWidth, const QString &color)
+                                 float lineWidth)
 {
     QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), pointCount);
     geometry->setLineWidth(lineWidth);
     geometry->setDrawingMode(GL_LINES);
 
     QSGFlatColorMaterial *material = new QSGFlatColorMaterial();
-    material->setColor(color);
+    material->setColor(m_color);
 
     node->setGeometry(geometry);
     node->setMaterial(material);
     node->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
 }
 
-void PlotView::plotBackground(QSGGeometryNode *node, int pointCount)
+void PlotView::plotBackground(QSGGeometryNode *node, int lineCount)
 {
     float step = 0;
-    float diff = 2*height()/pointCount;
-    for(int i = 0; i < pointCount; i += 2){
+    float diff = height()/lineCount;
+    for(int i = 0; i < 2*lineCount - 1; i += 2){
         node->geometry()->vertexDataAsPoint2D()[i].set(0, step);
         node->geometry()->vertexDataAsPoint2D()[i+1].set(width(), step);
         step += diff;
@@ -95,12 +113,12 @@ QSGNode* PlotView::updatePaintNode(QSGNode *oldNode,
 
     if(!oldNode) {
         m_background = new QSGGeometryNode();
-        setNodeParameters(m_background, m_lineCount*2, 1, "white");
+        setNodeParameters(m_background, m_lineCount*2, 1);
         m_background->setInheritedOpacity(0.3);
-        plotBackground(m_background, m_lineCount*2);
+        plotBackground(m_background, m_lineCount);
 
         auto graph = new QSGGeometryNode();
-        setNodeParameters(graph, m_percantage.size(), 3, "blue");
+        setNodeParameters(graph, m_percantage.size(), 3);
         graph->geometry()->setDrawingMode(GL_LINE_STRIP);
         plotGraph(graph);
 

@@ -7,3 +7,4 @@ RPMS
 Makefile
 *.list
 power_consumption
+daemon
