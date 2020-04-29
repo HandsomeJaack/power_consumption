@@ -2,7 +2,8 @@ TEMPLATE = subdirs
 
 SUBDIRS = \
     app \
-    daemon \
+    batstat \
+    cpustat
 
 OTHER_FILES += \
     rpm/power.spec \

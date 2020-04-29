@@ -9,4 +9,4 @@ target.path += /usr/bin
 INSTALLS += target
 
 SOURCES += \
-    daemon.cpp
+    batstat.cpp
