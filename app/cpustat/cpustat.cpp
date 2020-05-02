@@ -1,66 +1,30 @@
 #include <QDirIterator>
-#include <QDebug>
 #include <QFile>
 #include <QString>
 #include <QStringList>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QVector>
-
-#define PID_STAT_PATH "/proc/%u/stat"
-#define PIDS_PATH "/proc"
-
+#include <QPair>
 // Neccessary for sysconf
 #include <unistd.h>
+#include "cpustat.h"
 
-class Process
+#include <QDebug>
+
+static double now()
 {
-    public:
-        Process() = default;
-        Process(int pid);
+    double uptime_seconds;
+    // file contains two numbers in seconds: system uptime and idle time
+    QFile uptime("/proc/uptime");
+    uptime.open(QIODevice::ReadOnly);
+    QTextStream tmp(&uptime);
+    QStringList up = tmp.readLine().split(' ');
+    uptime_seconds = up[0].toDouble();
+    uptime.close();
 
-         double getCpuUsage();
-         QString getProcessName();
-         int getPid();
-    private:
-        // all time calculates in SECONDS, NOT TICKS
-        int pid;
-        QString app_name;
-        QStringList total_stat;
-        int utime;
-        int stime;
-        int cutime;
-        int cstime;
-        unsigned long starttime;
-        // percentage
-        double cpu_usage;
-};
-
-class Program
-{
-    public:
-        Program() = default;
-        Program(QString name);
-
-        double getCpuUsage();
-        QString getName();
-        void addPid(int pid);
-        void listPids();
-    private:
-        QString name;
-        QVector<Process> pids;
-};
-
-class Usage
-{
-    public:
-        Usage() = default;
-        void getStats();
-        void totalProgramUsage();
-    private:
-        QVector<Process> pids;
-        QVector<Program> programs;
-};
+    return uptime_seconds;
+}
 
 Process::Process(int pid) : pid(pid)
 {
@@ -89,21 +53,17 @@ Process::Process(int pid) : pid(pid)
     cutime = total_stat[15].toDouble()/sysconf(_SC_CLK_TCK);
     cstime = total_stat[16].toDouble()/sysconf(_SC_CLK_TCK);
     starttime = total_stat[21].toDouble()/sysconf(_SC_CLK_TCK);
+    cpu_usage = (utime + stime + cutime + cstime)/(now() - starttime) * 100;
+    QFile uidFile("/proc/" + QString::number(pid) + "/status");
+    uidFile.open(QIODevice::ReadOnly);
+    QString status = QTextCodec::codecForName("UTF-8")->toUnicode(uidFile.readAll());
+    uidFile.close();
+
+    QStringList lines = status.split('\n');
+    QString uidLine = lines[6].split(':').last();
+    uid = uidLine.split('\t').last().toInt();
 }
 
-static double now()
-{
-    double uptime_seconds;
-    // file contains two numbers in seconds: system uptime and idle time
-    QFile uptime("/proc/uptime");
-    uptime.open(QIODevice::ReadOnly);
-    QTextStream tmp(&uptime);
-    QStringList up = tmp.readLine().split(' ');
-    uptime_seconds = up[0].toDouble();
-    uptime.close();
-
-    return uptime_seconds;
-}
 
 QString Process::getProcessName()
 {
@@ -112,7 +72,6 @@ QString Process::getProcessName()
 
 double Process::getCpuUsage()
 {
-    cpu_usage = (utime + stime + cutime + cstime)/(now() - starttime);
     return cpu_usage;
 }
 
@@ -121,11 +80,16 @@ int Process::getPid()
     return pid;
 }
 
+int Process::getUserId()
+{
+    return uid;
+}
+
 Program::Program(QString name) : name(name) {}
 
 double Program::getCpuUsage()
 {
-    double program_cpu_usage;
+    double program_cpu_usage = 0;
     for(auto& pid: pids) {
         program_cpu_usage += pid.getCpuUsage();
     }
@@ -142,30 +106,39 @@ void Program::addPid(int pid)
     pids.push_back(pid);
 }
 
+int Program::getUserId()
+{
+    return pids.first().getUserId();
+}
+
 void Usage::getStats()
 {
     QDirIterator it(PIDS_PATH, QDirIterator::NoIteratorFlags);
+    // list pids in /proc/[pid]/dir
     while(it.hasNext()) {
         QFile file(it.next());
         QString filename = file.fileName();
         filename.remove(0,6);
 
+        // check if folder is [pid]
         bool ok;
         int pid = filename.toInt(&ok);
         if(ok) {
             Process proc(pid);
+            // add pid to the list of pids
             pids.push_back(proc);
 
             bool pid_already_exists = false;
             int pos = 0;
 
+            // check if [pid] with [appname] already exists
             for( ; pos < programs.size(); ++pos) {
                 if(programs[pos].getName() == proc.getProcessName()) {
                     pid_already_exists = true;
                     break;
                 }
             }
-
+            // if [pid] with [appname] exists add [pid] to list of [appname] pids
             if(pid_already_exists){
                 programs[pos].addPid(pid);
             } else {
@@ -177,21 +150,31 @@ void Usage::getStats()
     }
 }
 
-void Usage::totalProgramUsage()
+QVector<QPair<double, QString>> Usage::totalProgramUsage()
 {
+    QVector<QPair<double, QString>> programList;
     QFile totalUsage("/home/nemo/Downloads/cpuusage");
     totalUsage.open(QIODevice::WriteOnly);
 
+    QPair<double, QString> system = {0, "System"};
     QTextStream out(&totalUsage);
     for(auto &program: programs) {
-        out << program.getName() + ": " + QString::number(program.getCpuUsage(), 'f', 3) + "\n";
-    }
-    totalUsage.close();
-}
+        double percentage = program.getCpuUsage();
+        QString appName = program.getName();
 
-int main()
-{
-    Usage u;
-    u.getStats();
-    u.totalProgramUsage();
+        if(program.getUserId() == 0) {
+            system.first+= percentage;
+            continue;
+        }
+
+        if(percentage < 0.01)
+            continue;
+
+        out << appName + ": " + QString::number(percentage, 'f', 3) + "\n";
+        programList.append({percentage,appName});
+    }
+    out << system.second + ": " + system.first + "\n";
+    programList.append(system);
+    totalUsage.close();
+    return programList;
 }

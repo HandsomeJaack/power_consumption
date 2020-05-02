@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import powerstat.plotview 1.0
+import powerstat.cpuview 1.0
 
 Page {
     id: page
@@ -20,9 +21,11 @@ Page {
         lineCount: 5
         width: parent.width*0.75
         height: parent.width/2
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: parent.height*0.2
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: parent.top
+            topMargin: parent.height*0.2
+        }
     }
 
     readonly property var time: plot.diff
@@ -66,6 +69,43 @@ Page {
             columnSpacing: parent.width/4
             Repeater {
                 model: [time[0], time[1], time[2]]
+                delegate: Text {
+                    color: Theme.highlightColor
+                    text: modelData
+                }
+            }
+        }
+    }
+
+    CpuView {
+        id: cpuUsage
+
+        anchors {
+            top: timing.bottom
+            right: timing.right
+        }
+        color: Theme.highlightColor
+        width: parent.width*0.5
+        height: parent.width/2
+    }
+
+    Column {
+        id: applications
+
+        anchors {
+            right: cpuUsage.left
+            top: plot.bottom
+        }
+
+        width: parent.width*0.75
+        height: parent.width/2
+
+        Grid {
+            columns: 1
+            rows: 5
+
+            Repeater {
+                model:  cpuUsage.apps
                 delegate: Text {
                     color: Theme.highlightColor
                     text: modelData

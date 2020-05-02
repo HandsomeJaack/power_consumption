@@ -17,8 +17,10 @@ CONFIG += sailfishapp
 
 SOURCES += \
     src/batstat.cpp \
+    src/cpuview.cpp \
     src/main.cpp \
-    src/plotview.cpp
+    src/plotview.cpp \
+    cpustat/cpustat.cpp
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
@@ -34,4 +36,6 @@ TRANSLATIONS += translations/power_consumption-de.ts
 
 HEADERS += \
     src/batstat.h \
-    src/plotview.h
+    src/cpuview.h \
+    src/plotview.h \
+    cpustat/cpustat.h

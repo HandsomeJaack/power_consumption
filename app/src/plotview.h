@@ -5,7 +5,7 @@
 #include <QQuickItem>
 #include <QObject>
 #include <QList>
-#include <QString>
+#include <QStringList>
 #include <QSGNode>
 #include <QSGGeometryNode>
 
