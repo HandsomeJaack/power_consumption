@@ -12,7 +12,7 @@
 class PlotView: public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(QList<QString> diff READ diff NOTIFY diffChanged)
+    Q_PROPERTY(QStringList measurementTime READ measurementTime NOTIFY measurementChanged)
     Q_PROPERTY(int lineCount READ lineCount WRITE setLineCount NOTIFY lineCountChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
@@ -23,7 +23,7 @@ public:
                            float lineWidth);
     void plotGraph(QSGGeometryNode *node);
     void plotBackground(QSGGeometryNode *node, int pointCount);
-    QList<QString> diff();
+    QStringList measurementTime();
     int lineCount();
     void setLineCount(int lines);
 
@@ -31,12 +31,12 @@ public:
     void setColor(QColor theme_color);
 
 signals:
-    void diffChanged();
+    void measurementChanged();
     void lineCountChanged();
     void colorChanged();
 
 private:
-    QList<QString> m_time;
+    QStringList m_time;
     QList<int> m_percantage;
     QSGGeometryNode *m_background;
     int m_lineCount;

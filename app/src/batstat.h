@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QList>
 
 class BatteryStatistics : public QObject
@@ -11,7 +12,7 @@ class BatteryStatistics : public QObject
 public:
     explicit BatteryStatistics(QObject *parent = 0);
     ~BatteryStatistics();
-    Q_INVOKABLE QList<QString> getTime();
+    Q_INVOKABLE QStringList getTime();
     Q_INVOKABLE QList<int> getPercentage();
 private:
     QList<QString> time;

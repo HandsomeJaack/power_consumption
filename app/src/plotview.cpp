@@ -22,9 +22,9 @@ PlotView::~PlotView()
 {
 }
 
-QList<QString> PlotView::diff()
+QStringList PlotView::measurementTime()
 {
-    QList<QString> diff;
+    QStringList diff;
     int lastMeasurement = m_time.size()-1;
 
     QString firstMeasurementDay = m_time[0];
@@ -87,6 +87,7 @@ void PlotView::plotBackground(QSGGeometryNode *node, int lineCount)
 {
     float step = 0;
     float diff = height()/lineCount;
+
     for(int i = 0; i < 2*lineCount - 1; i += 2){
         node->geometry()->vertexDataAsPoint2D()[i].set(0, step);
         node->geometry()->vertexDataAsPoint2D()[i+1].set(width(), step);

@@ -13,6 +13,7 @@ class CpuView : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QStringList apps READ apps NOTIFY appsChanged)
+    Q_PROPERTY(QStringList percentage READ percentage NOTIFY percentageChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
     explicit CpuView(QQuickItem *parent = nullptr);
@@ -23,10 +24,12 @@ public:
     void plotGraph(QSGGeometryNode *node);
 
     QStringList apps();
+    QStringList percentage();
     QColor color();
     void setColor(QColor theme_color);
 signals:
     void appsChanged();
+    void percentageChanged();
     void colorChanged();
 
 private:

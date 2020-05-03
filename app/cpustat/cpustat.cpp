@@ -10,8 +10,6 @@
 #include <unistd.h>
 #include "cpustat.h"
 
-#include <QDebug>
-
 static double now()
 {
     double uptime_seconds;

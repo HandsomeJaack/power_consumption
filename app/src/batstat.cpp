@@ -34,7 +34,7 @@ BatteryStatistics::~BatteryStatistics()
 {
 }
 
-QList<QString> BatteryStatistics::getTime()
+QStringList BatteryStatistics::getTime()
 {
     return time;
 }

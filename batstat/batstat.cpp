@@ -7,7 +7,6 @@
 #include <QTime>
 #include <QTextStream>
 #include <QDateTime>
-#include <QDebug>
 
 class BatteryLevelUpdater
 {

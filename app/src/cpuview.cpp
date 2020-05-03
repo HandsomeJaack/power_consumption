@@ -35,9 +35,18 @@ QStringList CpuView::apps()
 {
     QStringList apps;
     for(int i = 0; i < m_appList.size(); ++i) {
-        apps.append(m_appList[i].second);
+        apps.append(m_appList[i].second); // + "\n" + QString::number(m_appList[i].first, 'f', 2) + "%");
     }
     return apps;
+}
+
+QStringList CpuView::percentage()
+{
+    QStringList percentage;
+    for(int i = 0; i < m_appList.size(); ++i) {
+        percentage.append(QString::number(m_appList[i].first, 'f', 2) + "%");
+    }
+    return percentage;
 }
 
 void CpuView::setNodeParameters(QSGGeometryNode *node, int pointCount,
@@ -57,12 +66,21 @@ void CpuView::setNodeParameters(QSGGeometryNode *node, int pointCount,
 
 void CpuView::plotGraph(QSGGeometryNode *node)
 {
-    float diff = 0;
+    float y = 0.0;
+    float  x = 0.0;
+    float diff = 5.0;
 
-    for(int i = 0; i < 2*m_appList.size() - 1; ++i) {
-        node->geometry()->vertexDataAsPoint2D()[0].set(0, diff);
-        node->geometry()->vertexDataAsPoint2D()[1].set(static_cast<float>(m_appList[0].first*100), diff);
-        diff += height()/m_appList.size();
+    int pointStep = 0;
+    for(int listItemIndex = 0; listItemIndex < m_appList.size(); listItemIndex++) {
+        node->geometry()->vertexDataAsPoint2D()[pointStep].set(0, y);
+
+        x = m_appList[listItemIndex].first;
+        if(m_appList[listItemIndex].first < 1.0)
+            x = 1;
+
+        node->geometry()->vertexDataAsPoint2D()[pointStep+1].set(static_cast<float>(x/100*width()), y);
+        qDebug() << QString::number(x/100*width(), 'f', 2) + ": " + QString::number(y);
+        y += diff;
     }
 }
 
@@ -73,7 +91,7 @@ QSGNode* CpuView::updatePaintNode(QSGNode *oldNode,
 
     if(!oldNode) {
         m_graph = new QSGGeometryNode();
-        setNodeParameters(m_graph, m_appList.size(), 100);
+        setNodeParameters(m_graph, 2*m_appList.size(), 100);
         plotGraph(m_graph);
     }
     return m_graph;
