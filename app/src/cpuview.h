@@ -15,6 +15,7 @@ class CpuView : public QQuickItem
     Q_PROPERTY(QStringList apps READ apps NOTIFY appsChanged)
     Q_PROPERTY(QStringList percentage READ percentage NOTIFY percentageChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(float lineWidth READ lineWidth WRITE setLineWidth NOTIFY lineWidthChanged)
 public:
     explicit CpuView(QQuickItem *parent = nullptr);
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
@@ -27,16 +28,19 @@ public:
     QStringList percentage();
     QColor color();
     void setColor(QColor theme_color);
+    float lineWidth();
+    void setLineWidth(float width);
 signals:
     void appsChanged();
     void percentageChanged();
     void colorChanged();
-
+    void lineWidthChanged();
 private:
     QVector<QPair<double, QString>> m_appList;
     QColor m_color;
     QSGGeometryNode *m_graph;
     int m_limit;
+    float m_lineWidth;
 };
 
 #endif // CPUVIEW_H

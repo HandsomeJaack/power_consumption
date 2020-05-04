@@ -84,6 +84,7 @@ Page {
 
         CpuView {
             id: cpuUsage
+            lineWidth: 28
             anchors {
                 right: cpuPercentaage.left
                 left: applications.right
