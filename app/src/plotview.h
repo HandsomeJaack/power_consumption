@@ -20,9 +20,10 @@ public:
     explicit PlotView(QQuickItem *parent = NULL);
     ~PlotView();
     void setNodeParameters(QSGGeometryNode *node, int pointCount,
-                           float lineWidth);
+                           float lineWidth, bool isBlur);
     void plotGraph(QSGGeometryNode *node);
     void plotBackground(QSGGeometryNode *node, int pointCount);
+    void plotBlur(QSGGeometryNode *node);
     QStringList measurementTime();
     int lineCount();
     void setLineCount(int lines);
