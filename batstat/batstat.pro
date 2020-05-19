@@ -10,3 +10,7 @@ INSTALLS += target
 
 SOURCES += \
     batstat.cpp
+
+#module.commands = make -C ../freqvolmod
+#QMAKE_EXTRA_TARGETS += module
+#PRE_TARGETDEPS += module

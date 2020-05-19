@@ -48,10 +48,11 @@ Process::Process(int pid) : pid(pid)
     // calculates seconds
     utime = total_stat[13].toDouble()/sysconf(_SC_CLK_TCK);
     stime = total_stat[14].toDouble()/sysconf(_SC_CLK_TCK);
+    // track child processes if neccessary
     cutime = total_stat[15].toDouble()/sysconf(_SC_CLK_TCK);
     cstime = total_stat[16].toDouble()/sysconf(_SC_CLK_TCK);
     starttime = total_stat[21].toDouble()/sysconf(_SC_CLK_TCK);
-    cpu_usage = (utime + stime + cutime + cstime)/(now() - starttime) * 100;
+    cpu_usage = utime + stime;
     QFile uidFile("/proc/" + QString::number(pid) + "/status");
     uidFile.open(QIODevice::ReadOnly);
     QString status = QTextCodec::codecForName("UTF-8")->toUnicode(uidFile.readAll());
@@ -156,8 +157,14 @@ QVector<QPair<double, QString>> Usage::totalProgramUsage()
 
     QPair<double, QString> system = {0, "System"};
     QTextStream out(&totalUsage);
+
+    double total_cpu_usage = 0;
     for(auto &program: programs) {
-        double percentage = program.getCpuUsage();
+        total_cpu_usage += program.getCpuUsage();
+    }
+
+    for(auto &program: programs) {
+        double percentage = program.getCpuUsage()/total_cpu_usage*100;
         QString appName = program.getName();
 
         if(program.getUserId() == 0) {

@@ -30,6 +30,7 @@ Application for battery usage and app statiscis.
 
 %files
 %defattr(-,root,root,-)
+#/cpufreqvol-event.ko
 /etc/systemd/system/batstat.service
 %{_bindir}
 %{_datadir}/%{name}
@@ -38,3 +39,5 @@ Application for battery usage and app statiscis.
 %post
 chmod 644 /etc/systemd/system/batstat.service
 systemctl enable batstat
+#insmod cpufreqvol-event.ko
+#echo 1 > /sys/kernel/debug/tracing/events/cpufreqvol/get_stats/enable
