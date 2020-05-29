@@ -1,0 +1,16 @@
+[Unit]
+Description=Voltage status per time
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+User=nemo
+ExecStart=/usr/bin/voltstat
+
+[Install]
+WantedBy=multi-user.target
+

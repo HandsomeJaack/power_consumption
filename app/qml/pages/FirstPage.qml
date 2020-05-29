@@ -60,18 +60,20 @@ Page {
             }
         }
 
+
         Column {
             id: timing
 
             anchors {
                 top: plot.bottom
+                topMargin: -0.05*Screen.height
                 horizontalCenter: parent.horizontalCenter
             }
 
             Grid {
                 columns: plot.measurementTime.size
                 rows: 1
-                columnSpacing: parent.width/plot.measurementTime.lentgh
+                columnSpacing: Screen.width/6
                 Repeater {
                     model: plot.measurementTime
                     delegate: Text {
@@ -139,8 +141,5 @@ Page {
                 }
             }
         }
-
-
-        VerticalScrollDecorator {}
     }
 }

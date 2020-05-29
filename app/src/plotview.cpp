@@ -34,13 +34,12 @@ QStringList PlotView::measurementTime()
     if(firstMeasurementDay.left(6) == lastMeasurementDay.left(6)) {
         firstMeasurementDay = firstMeasurementDay.remove(0,6);
         midMeasurementDay = midMeasurementDay.remove(0,6);
-        lastMeasurementDay = midMeasurementDay.remove(0,6);
+        lastMeasurementDay = lastMeasurementDay.remove(0,6);
     } else {
         firstMeasurementDay =  firstMeasurementDay.insert(7, '\n');
         midMeasurementDay = midMeasurementDay.insert(7, '\n');
         lastMeasurementDay = lastMeasurementDay.insert(7, '\n');
     }
-
     diff.append(firstMeasurementDay);
     diff.append(midMeasurementDay);
     diff.append(lastMeasurementDay);

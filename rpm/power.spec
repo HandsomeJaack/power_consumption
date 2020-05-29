@@ -32,6 +32,7 @@ Application for battery usage and app statiscis.
 %defattr(-,root,root,-)
 #/cpufreqvol-event.ko
 /etc/systemd/system/batstat.service
+/etc/systemd/system/voltstat.service
 %{_bindir}
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
@@ -39,5 +40,9 @@ Application for battery usage and app statiscis.
 %post
 chmod 644 /etc/systemd/system/batstat.service
 systemctl enable batstat
+chmod 644 /etc/systemd/system/voltstat.service
+systemctl enable voltstat
+chmod +r /sys/kernel/debug/tracing/trace
+chmod go+x /sys/kernel/debug/tracing/trace
 #insmod cpufreqvol-event.ko
 #echo 1 > /sys/kernel/debug/tracing/events/cpufreqvol/get_stats/enable

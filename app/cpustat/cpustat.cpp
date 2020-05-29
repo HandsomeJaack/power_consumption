@@ -1,14 +1,21 @@
+#include <QDateTime>
 #include <QDirIterator>
 #include <QFile>
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QVector>
 #include <QPair>
+#include <QDebug>
 // Neccessary for sysconf
 #include <unistd.h>
 #include "cpustat.h"
+
+#define TRACE_PATH "/sys/kernel/debug/tracing/trace"
+#define TMP_PATH "/home/nemo/Downloads/trace"
+#define SCHED_CONFIG_PATH "/home/nemo/Downloads/sched_config"
 
 static double now()
 {
@@ -147,13 +154,65 @@ void Usage::getStats()
             }
         }
     }
+
+    QFile traceCopy(TRACE_PATH);
+    QFile schedConfig(SCHED_CONFIG_PATH);
+
+    if(traceCopy.open(QIODevice::ReadOnly) &&
+            schedConfig.open(QIODevice::WriteOnly)) {
+
+        QTextStream in(&traceCopy);
+        QTextStream out(&schedConfig);
+
+        // <pid, <cpu,timestamp>>
+        QMap<QString, QPair<QString,QString>> pids;
+
+        QString measurementStart;
+        double measurementEnd = 0;
+        bool first = true;
+
+        QString line = in.readLine();
+        while(!in.atEnd()) {
+            line = in.readLine();
+            QRegularExpression e("\\[([0-9]*)\\].*\\s([0-9.]*):\\s*sched_switch:.*prev_pid=([0-9]*).*next_pid=([0-9]*)");
+            QRegularExpressionMatch m = e.match(line);
+            if(m.hasMatch()) {
+                QString cpu = m.captured(1);
+                QString timestamp = m.captured(2);
+                QString prev_pid = m.captured(3);
+                QString next_pid = m.captured(4);
+
+                if(first) {
+                    measurementStart = timestamp;
+                    first = false;
+                }
+
+                if(pids.contains(prev_pid)) {
+                    QString timestampStart = pids.value(prev_pid).second;
+                    out << timestamp + "-" + timestampStart + " " + prev_pid + " [" + cpu + "]\n";
+                    pids.remove(prev_pid);
+                } else {
+                    if(next_pid == 0) {
+                        out << measurementStart + "-" + timestamp + " " + prev_pid + " [" + cpu + "]\n";
+                    } else {
+                        pids[next_pid] = {cpu, timestamp};
+                    }
+                }
+            }
+        }
+        uint finished = QDateTime::currentDateTime().toTime_t();
+        for(auto it = pids.begin(); it != pids.end(); ++it)
+            out << it.value().second + "-" + QString::number(finished) +
+                   " " + it.key() + " [" + it.value().first + "]\n";
+    }
+    traceCopy.close();
+    schedConfig.close();
 }
 
 QVector<QPair<double, QString>> Usage::totalProgramUsage()
 {
     QVector<QPair<double, QString>> programList;
     QFile totalUsage("/home/nemo/Downloads/cpuusage");
-    totalUsage.open(QIODevice::WriteOnly);
 
     QPair<double, QString> system = {0, "System"};
     QTextStream out(&totalUsage);
