@@ -4,38 +4,54 @@
 #include <QThreadPool>
 #include <QtMath>
 
-class Worker : public QRunnable
+class Worker : public QObject
 {
-    int thread;
-    void run() {
-        QElapsedTimer *timer = new QElapsedTimer();
-        timer->start();
+    Q_OBJECT
+public:
+  Worker(int thread): thread(thread) {}
+  ~Worker() = default;
+
+public slots:
+    void process() {
+        QElapsedTimer timer;
+        timer.start();
         QString s = "Executing calculations from dummy_two " +
                 QString::number(thread) + " thread";
         qDebug() << s;
         double x = 1.00001, y = 0.001;
-        while(timer->elapsed() < 15000) {
+        while(timer.elapsed() < 15000) {
             x = qPow(x,y);
         }
         QString f = "Calculation finished for dummy_two " +
                 QString::number(thread) + " thread";
         qDebug() << f;
+        emit finished();
     }
-public:
-  Worker(int thread): thread(thread) {}
-
+signals:
+    void finished() {}
+private:
+    int thread;
 };
 
 int main()
 {
-    Worker worker1(1);
-    Worker worker2(2);
-    Worker worker3(3);
-    Worker worker4(4);
-    QThreadPool *threadPool = new QThreadPool();
-    threadPool->start(&worker1);
-    threadPool->start(&worker2);
-    threadPool->start(&worker3);
-    threadPool->start(&worker4);
+    QThread threads[4];
+    Worker* workers[4];
+    for(int i = 0; i < 4; ++i) {
+        workers[i]->moveToThread(&threads[i]);
+    }
+
+    for(int i = 0; i < 4; ++i) {
+        QObject::connect(&threads[i], &QThread::started, workers[i], &Worker::process);
+        QObject::connect(workers[i], &Worker::finished, &threads[i], &QThread::quit);
+        QObject::connect(workers[i], &Worker::finished, workers[i], &Worker::deleteLater);
+        QObject::connect(&threads[i], &QThread::finished, &threads[i], &QThread::deleteLater);
+    }
+
+    for(int i = 0; i < 4; ++i) {
+        threads[i].start();
+    }
+
     return 0;
 }
+
